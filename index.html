@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Random Flight Viewer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0b1726;
+      --panel: #12243a;
+      --accent: #50b5ff;
+      --text: #eaf2ff;
+      --muted: #9fb4d3;
+      --shadow: 0 14px 35px rgba(0, 0, 0, 0.35);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: radial-gradient(circle at 20% 20%, rgba(80, 181, 255, 0.08), transparent 25%),
+                  radial-gradient(circle at 80% 10%, rgba(111, 214, 255, 0.12), transparent 30%),
+                  radial-gradient(circle at 50% 80%, rgba(23, 128, 237, 0.08), transparent 35%),
+                  var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+    }
+
+    .card {
+      width: min(960px, 100%);
+      background: linear-gradient(135deg, rgba(18, 36, 58, 0.92), rgba(8, 17, 30, 0.96));
+      border: 1px solid rgba(80, 181, 255, 0.25);
+      border-radius: 20px;
+      padding: 2rem 2.5rem;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      flex-wrap: wrap;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.8rem, 2vw + 1rem, 2.4rem);
+      letter-spacing: -0.02em;
+    }
+
+    p.subtitle {
+      margin: 0.35rem 0 0;
+      color: var(--muted);
+    }
+
+    button {
+      background: linear-gradient(120deg, #2d8bff, #50b5ff);
+      color: #fff;
+      border: none;
+      border-radius: 999px;
+      padding: 0.85rem 1.6rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 10px 25px rgba(80, 181, 255, 0.3);
+      transition: transform 120ms ease, box-shadow 200ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 16px 40px rgba(80, 181, 255, 0.45);
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .content {
+      margin-top: 1.8rem;
+      display: grid;
+      gap: 1.25rem;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .metric {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(80, 181, 255, 0.1);
+      border-radius: 14px;
+      padding: 1rem 1.2rem;
+    }
+
+    .metric h3 {
+      margin: 0 0 0.4rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .metric .value {
+      display: block;
+      font-size: 1.2rem;
+      font-weight: 700;
+    }
+
+    .status {
+      margin-top: 1rem;
+      padding: 1rem 1.2rem;
+      border-radius: 12px;
+      background: rgba(80, 181, 255, 0.08);
+      border: 1px solid rgba(80, 181, 255, 0.2);
+      color: #dff1ff;
+    }
+
+    .status strong { color: #fff; }
+
+    .error {
+      background: rgba(255, 92, 92, 0.12);
+      border-color: rgba(255, 92, 92, 0.35);
+      color: #ffe5e5;
+    }
+
+    .hint {
+      color: var(--muted);
+      margin-top: 0.5rem;
+      font-size: 0.92rem;
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <header>
+      <div>
+        <h1>Random Flight Viewer</h1>
+        <p class="subtitle">Fetch live flight data and explore a random aircraft currently in the air.</p>
+      </div>
+      <button id="refresh">Get Random Flight</button>
+    </header>
+
+    <section id="status" class="status">Click "Get Random Flight" to start.</section>
+
+    <section class="content" aria-live="polite">
+      <div class="metric">
+        <h3>Callsign</h3>
+        <span class="value" id="callsign">—</span>
+      </div>
+      <div class="metric">
+        <h3>Origin Country</h3>
+        <span class="value" id="origin">—</span>
+      </div>
+      <div class="metric">
+        <h3>Coordinates</h3>
+        <span class="value" id="coordinates">—</span>
+      </div>
+      <div class="metric">
+        <h3>Altitude</h3>
+        <span class="value" id="altitude">—</span>
+      </div>
+      <div class="metric">
+        <h3>Ground Speed</h3>
+        <span class="value" id="speed">—</span>
+      </div>
+      <div class="metric">
+        <h3>Last Contact</h3>
+        <span class="value" id="last-contact">—</span>
+      </div>
+    </section>
+
+    <p class="hint">
+      Data is sourced from the OpenSky Network public API and may be delayed or limited.
+    </p>
+  </main>
+  <script src="web.js"></script>
+</body>
+</html>
